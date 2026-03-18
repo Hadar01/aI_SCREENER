@@ -7,6 +7,8 @@ import JobDescriptionUpload from "./components/JobDescriptionUpload";
 import CandidateComparison from "./components/CandidateComparison";
 import ResumeUploader from "./components/ResumeUploader";
 import LandingPage from "./components/LandingPage";
+import ProfilePage from "./components/ProfilePage";
+import SettingsPage from "./components/SettingsPage";
 
 const VIEWS = {
   LANDING: "landing",
@@ -15,6 +17,7 @@ const VIEWS = {
   JOB_DESCRIPTIONS: "job-descriptions",
   COMPARISON: "comparison",
   SETTINGS: "settings",
+  PROFILE: "profile",
 };
 
 export default function App() {
@@ -22,6 +25,7 @@ export default function App() {
   const [selectedCandidateId, setSelectedCandidateId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [toast, setToast] = useState(null);
+  const [userName] = useState("Admin");
 
   const showToast = (msg) => {
     setToast(msg);
@@ -29,19 +33,25 @@ export default function App() {
   };
 
   const handleStartApp = () => setActiveView(VIEWS.DASHBOARD);
+  const handleLogout = () => {
+    showToast("👋 Signed out successfully");
+    setActiveView(VIEWS.LANDING);
+  };
 
   const handleViewCandidate = (id) => setSelectedCandidateId(id);
   const handleCloseDetail = () => setSelectedCandidateId(null);
 
-  const handleSaveAndScreen = (jobTitle, jd, skills) => {
+  const handleSaveAndScreen = (jobTitle) => {
     showToast(`✅ Job profile "${jobTitle}" saved. Ready to screen!`);
     setActiveView(VIEWS.DASHBOARD);
   };
 
+  // ── Landing Page ────────────────────────────────────────────────────────
   if (activeView === VIEWS.LANDING) {
     return <LandingPage onEnter={handleStartApp} />;
   }
 
+  // ── View Router ─────────────────────────────────────────────────────────
   const renderView = () => {
     switch (activeView) {
       case VIEWS.DASHBOARD:
@@ -60,32 +70,24 @@ export default function App() {
                 Batch process multiple PDFs. Our engine will extract text and analyze against your active Job Profile.
               </p>
             </div>
-            {/* The standalone uploader without the dashboard stats */}
             <div className="bg-surface-container rounded-3xl p-8 border border-outline-variant/10 shadow-xl">
-              <ResumeUploader onUploadComplete={() => setActiveView(VIEWS.DASHBOARD)} />
+              <ResumeUploader
+                onUploadComplete={() => {
+                  showToast("✅ Resumes uploaded and queued for analysis!");
+                  setActiveView(VIEWS.DASHBOARD);
+                }}
+              />
             </div>
           </div>
         );
       case VIEWS.JOB_DESCRIPTIONS:
-        return (
-          <JobDescriptionUpload
-            onSaveAndScreen={handleSaveAndScreen}
-          />
-        );
+        return <JobDescriptionUpload onSaveAndScreen={handleSaveAndScreen} />;
       case VIEWS.COMPARISON:
-        return (
-          <CandidateComparison
-            onViewCandidate={handleViewCandidate}
-          />
-        );
+        return <CandidateComparison onViewCandidate={handleViewCandidate} />;
       case VIEWS.SETTINGS:
-        return (
-          <div className="flex flex-col items-center justify-center h-96 animate-fade-in">
-            <span className="material-symbols-outlined text-7xl text-outline-variant mb-4">settings</span>
-            <h2 className="text-2xl font-black text-on-surface">Settings</h2>
-            <p className="text-on-surface-variant mt-2">Enterprise tier configuration restricted.</p>
-          </div>
-        );
+        return <SettingsPage onToast={showToast} />;
+      case VIEWS.PROFILE:
+        return <ProfilePage userName={userName} onNavigate={setActiveView} />;
       default:
         return null;
     }
@@ -94,13 +96,20 @@ export default function App() {
   return (
     <div className="min-h-[100dvh] bg-surface text-on-surface font-['Inter'] antialiased" id="app-root">
       {/* ── Sidebar ───────────────────────────────────────────────────────── */}
-      <Sidebar activeView={activeView} onNavigate={setActiveView} />
+      <Sidebar
+        activeView={activeView}
+        onNavigate={setActiveView}
+        onLogout={handleLogout}
+      />
 
       {/* ── Top Bar ───────────────────────────────────────────────────────── */}
       <TopBar
         activeView={activeView}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onNavigate={setActiveView}
+        userName={userName}
+        onLogout={handleLogout}
       />
 
       {/* ── Main Content ──────────────────────────────────────────────────── */}

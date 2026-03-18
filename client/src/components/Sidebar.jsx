@@ -5,8 +5,9 @@ import React from "react";
  * Props:
  *   activeView    – current view key
  *   onNavigate(view) – navigation callback
+ *   onLogout      – logout callback
  */
-export default function Sidebar({ activeView, onNavigate }) {
+export default function Sidebar({ activeView, onNavigate, onLogout }) {
   const navItems = [
     { key: "dashboard", label: "Dashboard", icon: "dashboard" },
     { key: "upload", label: "Upload Resumes", icon: "cloud_upload" },
@@ -21,7 +22,7 @@ export default function Sidebar({ activeView, onNavigate }) {
       id="sidebar"
     >
       {/* Logo */}
-      <div className="mb-10 flex items-center gap-3">
+      <div className="mb-10 flex items-center gap-3 cursor-pointer" onClick={() => onNavigate("dashboard")}>
         <div className="w-8 h-8 bg-primary-container rounded flex items-center justify-center flex-shrink-0">
           <span className="material-symbols-outlined text-on-primary-container text-xl">
             cognition
@@ -46,7 +47,7 @@ export default function Sidebar({ activeView, onNavigate }) {
               key={key}
               id={`nav-${key}`}
               onClick={() => onNavigate(key)}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ease-in-out cursor-pointer active:scale-95 text-left
+              className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ease-in-out cursor-pointer active:scale-95 text-left rounded-lg
                 ${
                   isActive
                     ? "text-[#dae2fd] font-semibold border-r-2 border-[#4f46e5] bg-surface-container-high/10"
@@ -61,8 +62,9 @@ export default function Sidebar({ activeView, onNavigate }) {
         })}
       </nav>
 
-      {/* New Screening CTA */}
-      <div className="mt-auto pt-6 border-t border-outline-variant/10">
+      {/* Bottom Section */}
+      <div className="mt-auto space-y-3 pt-6 border-t border-outline-variant/10">
+        {/* New Screening CTA */}
         <button
           onClick={() => onNavigate("upload")}
           id="new-screening-btn"
@@ -74,6 +76,16 @@ export default function Sidebar({ activeView, onNavigate }) {
         >
           <span className="material-symbols-outlined text-sm">add</span>
           <span>New Screening</span>
+        </button>
+
+        {/* Logout */}
+        <button
+          onClick={onLogout}
+          id="sidebar-logout-btn"
+          className="w-full flex items-center justify-center gap-2 py-2.5 text-[#dae2fd]/40 hover:text-error text-sm font-medium rounded-lg hover:bg-error/5 transition-all"
+        >
+          <span className="material-symbols-outlined text-sm">logout</span>
+          <span>Sign Out</span>
         </button>
       </div>
     </aside>
