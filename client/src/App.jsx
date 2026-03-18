@@ -5,8 +5,11 @@ import Dashboard from "./components/Dashboard";
 import MatchDetailPanel from "./components/MatchDetailPanel";
 import JobDescriptionUpload from "./components/JobDescriptionUpload";
 import CandidateComparison from "./components/CandidateComparison";
+import ResumeUploader from "./components/ResumeUploader";
+import LandingPage from "./components/LandingPage";
 
 const VIEWS = {
+  LANDING: "landing",
   DASHBOARD: "dashboard",
   UPLOAD: "upload",
   JOB_DESCRIPTIONS: "job-descriptions",
@@ -15,7 +18,7 @@ const VIEWS = {
 };
 
 export default function App() {
-  const [activeView, setActiveView] = useState(VIEWS.DASHBOARD);
+  const [activeView, setActiveView] = useState(VIEWS.LANDING);
   const [selectedCandidateId, setSelectedCandidateId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [toast, setToast] = useState(null);
@@ -25,18 +28,19 @@ export default function App() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  const handleViewCandidate = (id) => {
-    setSelectedCandidateId(id);
-  };
+  const handleStartApp = () => setActiveView(VIEWS.DASHBOARD);
 
-  const handleCloseDetail = () => {
-    setSelectedCandidateId(null);
-  };
+  const handleViewCandidate = (id) => setSelectedCandidateId(id);
+  const handleCloseDetail = () => setSelectedCandidateId(null);
 
   const handleSaveAndScreen = (jobTitle, jd, skills) => {
     showToast(`✅ Job profile "${jobTitle}" saved. Ready to screen!`);
     setActiveView(VIEWS.DASHBOARD);
   };
+
+  if (activeView === VIEWS.LANDING) {
+    return <LandingPage onEnter={handleStartApp} />;
+  }
 
   const renderView = () => {
     switch (activeView) {
@@ -49,9 +53,18 @@ export default function App() {
         );
       case VIEWS.UPLOAD:
         return (
-          <JobDescriptionUpload
-            onSaveAndScreen={handleSaveAndScreen}
-          />
+          <div className="animate-fade-in space-y-6">
+            <div className="mb-8">
+              <h2 className="text-3xl font-black tracking-tighter text-on-surface">Upload Resumes</h2>
+              <p className="text-on-surface-variant font-medium mt-1">
+                Batch process multiple PDFs. Our engine will extract text and analyze against your active Job Profile.
+              </p>
+            </div>
+            {/* The standalone uploader without the dashboard stats */}
+            <div className="bg-surface-container rounded-3xl p-8 border border-outline-variant/10 shadow-xl">
+              <ResumeUploader onUploadComplete={() => setActiveView(VIEWS.DASHBOARD)} />
+            </div>
+          </div>
         );
       case VIEWS.JOB_DESCRIPTIONS:
         return (
@@ -70,7 +83,7 @@ export default function App() {
           <div className="flex flex-col items-center justify-center h-96 animate-fade-in">
             <span className="material-symbols-outlined text-7xl text-outline-variant mb-4">settings</span>
             <h2 className="text-2xl font-black text-on-surface">Settings</h2>
-            <p className="text-on-surface-variant mt-2">Configuration panel coming soon.</p>
+            <p className="text-on-surface-variant mt-2">Enterprise tier configuration restricted.</p>
           </div>
         );
       default:
@@ -79,7 +92,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface font-['Inter'] antialiased" id="app-root">
+    <div className="min-h-[100dvh] bg-surface text-on-surface font-['Inter'] antialiased" id="app-root">
       {/* ── Sidebar ───────────────────────────────────────────────────────── */}
       <Sidebar activeView={activeView} onNavigate={setActiveView} />
 
@@ -91,7 +104,7 @@ export default function App() {
       />
 
       {/* ── Main Content ──────────────────────────────────────────────────── */}
-      <main className="ml-64 pt-20 p-8 min-h-screen bg-surface-container-low" id="main-content">
+      <main className="ml-64 pt-20 px-8 pb-12 min-h-screen bg-surface-container-low" id="main-content">
         {renderView()}
       </main>
 
@@ -104,33 +117,22 @@ export default function App() {
       )}
 
       {/* ── Floating AI Engine Badge ──────────────────────────────────────── */}
-      <div className="fixed bottom-8 right-8 pointer-events-none z-30">
+      <div className="fixed bottom-8 right-8 pointer-events-none z-30 hidden md:block">
         <div className="p-4 glass-panel rounded-2xl border border-primary/20 flex items-center gap-4 pointer-events-auto shadow-2xl">
-          <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container flex-shrink-0">
-            <span
-              className="material-symbols-outlined animate-spin"
-              style={{ animationDuration: "3s" }}
-            >
-              sync
-            </span>
+          <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container flex-shrink-0 relative overflow-hidden">
+            <div className="absolute inset-0 bg-primary opacity-20 animate-pulse" />
+            <span className="material-symbols-outlined animate-spin" style={{ animationDuration: "3s" }}>sync</span>
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-bold text-on-surface leading-none">AI Engine Active</span>
-            <span className="text-[10px] text-on-surface-variant uppercase tracking-widest mt-1">
-              Refining matching algorithms
-            </span>
+            <span className="text-[10px] text-on-surface-variant uppercase tracking-widest mt-1">Refining matching algorithms</span>
           </div>
         </div>
       </div>
 
       {/* ── Toast Notification ────────────────────────────────────────────── */}
       {toast && (
-        <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] animate-slide-up
-                     rounded-full bg-surface-container-highest/90 backdrop-blur-xl border border-outline-variant/20
-                     px-6 py-3 text-sm font-medium text-on-surface shadow-2xl whitespace-nowrap"
-          id="toast-notification"
-        >
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] animate-slide-up bg-surface-container-highest/90 backdrop-blur-xl border border-outline-variant/20 px-6 py-3 text-sm font-bold text-on-surface shadow-2xl rounded-full">
           {toast}
         </div>
       )}
